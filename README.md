@@ -4,13 +4,13 @@
 
 
 ### Introduction
-Loosely speaking, a connection pool is a set of connections to a given database. Its purpose is to re-use existing connections rather that create a new connection every time data must be fetched from the database. Thus connection pools are useful for reducing latency in applications that require database access.
+Loosely speaking, a connection pool is a set of connections to a given database. Its purpose is to re-use existing connections rather than create a new connection every time data must be fetched from the database. Thus connection pools are useful for reducing latency in applications that require database access.
 
 
 ### Functionality
-- Set target lower and upper bounds (finite) on the number of connections in the pool under typical usage.
+- Set target lower and (finite) upper bounds on the number of connections in the pool under typical usage.
 - Set a (finite) peak number of connections, the absolute maximum number of connections that can be made.
-- Reset the target and peak numbers as desired (the peak is constrained to be at least a large as the target upper bound).
+- Reset the target and peak numbers as desired (the peak is constrained to be at least as large as the target upper bound).
 - When requesting a connection from the pool:
     - If the target upper bound has not been reached, get a connection from the `unoccupied` set if there is one, otherwise create a new one.
     - If the target upper bound has been reached:
