@@ -19,7 +19,7 @@ Loosely speaking, a connection pool is a set of connections to a given database.
         - Try a maximum of `n_tries` times to acquire a connection from the pool.
         - Return 0 if all attempts to acquire a connection fail.
 
-__Note:__ Currently only Redis connections are supported. If you need a pool of connections for another database, feel free to submit a pull request to this package.
+__Note:__ ConnectionPools.jl has only been tested with Redis so far.
 
 
 ### Example

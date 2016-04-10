@@ -2,24 +2,48 @@
     Contents: Getters for ConnectionPool
 =#
 
-#=type ConnectionPool
-    connection_prototype    # A disconnected instance of the connection
-    target_lb::Int64        # Lower bound of target number of connections in the pool
-    target_ub::Int64        # Upper bound of target number of connections in the pool
-    peak::Int64             # Peak number of connections in the pool 
-    unoccupied::Set         # The set of connections in the pool that are not being used
-    occupied::Set           # The set of connections in the pool that are being used
-    ms_wait::Int64          # If all connections are busy, how long to wait (ms) before trying to connect again
-    n_tries::Int64          # How many times to retry acquiring a connection
-end =#
 
 """
 Gets a connection from the pool if one is available, else returns 0.
+
+Notes:
+- Set target lower and (finite) upper bounds on the number of connections in the pool under typical usage.
+- Set a (finite) peak number of connections, the absolute maximum number of connections that can be made.
+- Reset the target and peak numbers as desired (the peak is constrained to be at least as large as the target upper bound).
+- When requesting a connection from the pool:
+    - If the target upper bound has not been reached, get a connection from the `unoccupied` set if there is one, otherwise create a new one.
+    - If the target upper bound has been reached:
+        - If the peak number has not been reached, create a new connection and delete it when finished.
+        - If the peak number has been reached, wait `ms_wait` ms and try again to acquire a connection.
+        - Try a maximum of `n_tries` times to acquire a connection from the pool.
+        - Return 0 if all attempts to acquire a connection fail.
 """
 function get_connection!(cp)
     result = 0
-    if length()
-
+    if get_n_connections(cp) < get_peak(cp)
+	if get_n_unoccupied(cp) == 0                          # If no connection available, create a new one
+	    result = new_connection(cp.connection_prototype)
+	    push!(cp.occupied, result)
+	else                                                  # If connection available, use it
+	    result = pop!(cp.unoccupied)
+	    push!(cp.occupied, result)
+	end
+    else
+	if get_n_unoccupied(cp) == 0                          # If no connection available, wait and try again
+	    s = 0.001 * get_n_tries(cp)
+	    for i = 1:cp.n_tries
+		sleep(s)
+		if get_n_unoccupied(cp) > 0
+		    result = pop!(cp.unoccupied)
+		    push!(cp.occupied, result)
+		    break
+		end
+	    end
+	else                                                  # If connection available, use it
+	    result = pop!(cp.unoccupied)
+	    push!(cp.occupied, result)
+	end
+    end
     result
 end
 
