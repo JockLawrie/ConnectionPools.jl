@@ -19,6 +19,8 @@ Loosely speaking, a connection pool is a set of connections to a given database.
         - Try a maximum of `n_tries` times to acquire a connection from the pool.
         - Return 0 if all attempts to acquire a connection fail.
 
+__Note:__ Currently only Redis connections are supported. If you need a pool of connections for another database, feel free to submit a pull request to this package.
+
 
 ### Example
 ```julia
@@ -76,7 +78,7 @@ end
 
 # Constructor
 # On creation, target_lb connections will be created
-cp = ConnectionPool(connection, target_lb, target_ub, peak, ms_wait, n_retries)
+cp = ConnectionPool(connection, target_lb, target_ub, peak, ms_wait, n_tries)
 
 # Getters
 c = get_connection!(cp)     # Gets a connection from the pool if one is available, else returns 0
@@ -87,16 +89,19 @@ get_target_lower(cp)
 get_target_upper(cp)
 get_peak(cp)
 get_wait(cp)
-get_n_retries(cp)
+get_n_tries(cp)
 
 # Setters
 set_target_lower!(cp)       # Adjusts cp.occupied and cp.unoccupied accordingly if necessary
 set_target_upper!(cp)       # Adjusts cp.occupied and cp.unoccupied accordingly if necessary
 set_peak!(cp)               # Adjusts cp.occupied and cp.unoccupied accordingly if necessary
 set_wait!(cp)
-set_n_retries!(cp)
+set_n_tries!(cp)
 
 # Cleaning up
 free!(cp, c)                # Sets the connection c to unoccupied if target upper is not exceeded, otherwise deletes it from the pool
 delete!(cp)                 # Disconnects and deletes all connections in the pool and sets target_ub and peak to 0
 ```
+
+### Todo
+1. Support connections to other databases on an as-needed basis.

@@ -1,5 +1,14 @@
 module ConnectionPools
 
+export ConnectionPool,
+
+
+
+include("constructors.jl")
+include("getters.jl")
+include("setters.jl")
+
+
 type ConnectionPool
     connection_prototype    # A disconnected instance of the connection
     target_lb::Int64        # Lower bound of target number of connections in the pool
