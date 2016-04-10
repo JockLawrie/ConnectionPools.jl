@@ -25,23 +25,33 @@ Loosely speaking, a connection pool is a set of connections to a given database.
 using ConnectionPools
 using Redis
 
+# Create some test data
+c = RedisConnection()
+set(c, "foo", "bar")
+disconnect(c)
+
+
 # Create a connection pool of RedisConnections with a target range of [0, 2] connections and a peak of 2 connections.
-# Try to acquire a connection 10 times, waiting 500ms between each try.
+# Try to acquire a connection up to 10 times, waiting 500ms between each try.
 cp = ConnectionPool(RedisConnection(), 0, 2, 2, 500, 10)
 c1 = get_connection!(cp)
 c2 = get_connection!(cp)
 c3 = get_connection!(cp)
+get(c1, "foo") == "bar"     # true
+get(c2, "foo") == "bar"     # true
 c3 == 0                     # true because a maximum of 2 connections is allowed
 
 set_target_upper!(cp, 3)    # Also sets peak to 3 because the constraint target_ub <= peak is enforced
 c3 = get_connection!(cp)
 c3 == 0                     # false because a 3rd connection is now allowed
+get(c3, "foo") == "bar"     # true
 
 c4 = get_connection!(cp)
 c4 == 0                     # true because a maximum of 3 connections is allowed
-set_peak!(cp, 4c)           # Increase peak from 3 to 4, leaving target upper bound at 3
+set_peak!(cp, 4)            # Increase peak from 3 to 4, leaving target upper bound at 3
 c4 = get_connection!(cp)
 c4 == 0                     # false because a 4th connection is now allowed
+get(c4, "foo") == "bar"     # true
 
 free!(cp, c4)               # Deletes c4 from cp because 4 is more than the target upper bound
 free!(cp, c3)               # Moves c3 from occupied to unoccupied
