@@ -19,7 +19,11 @@ Loosely speaking, a connection pool is a set of connections to a given database.
         - Try a maximum of `n_tries` times to acquire a connection from the pool.
         - If all attempts to acquire a connection fail, return the connection pool's connection prototype (a disconnected instance of the connection used to instantiate the connection pool).
 
-__Note:__ ConnectionPools.jl has only been tested with Redis so far. To add support for a new database, simply define a `new_connection(c)` method for your database type, see `src/new_connections` for details and examples.
+
+__Notes:__
+1. ConnectionPools.jl has only been tested with Redis so far.
+2. To add support for a new database, simply define a `new_connection(c)` method for your database type, see `src/new_connections` for details and examples.
+3. When setting target_lb, if target_lb <= target_ub <= peak is not satisfied then target_ub and peak are adjusted accordingly. Ditto when setting target_ub or peak.
 
 
 ### Redis example
@@ -94,16 +98,19 @@ get_peak(cp)
 get_wait(cp)
 get_n_tries(cp)
 
-# Setters
-# An error is raised if cp.target_lb <= cp.target_ub <= cp.peak is not satisfied.
-set_target_lower!(cp, n)       # Adjusts cp.unoccupied accordingly if necessary
-set_target_upper!(cp, n)       # Adjusts cp.unoccupied accordingly if necessary
+#=
+Setters
+    When setting target_lb, if target_lb <= target_ub <= peak is not satisfied then target_ub and peak are adjusted accordingly.
+    Ditto when setting target_ub or peak.
+=#
+set_target_lower!(cp, n)    # Adds new connections to cp.unoccupied if target_lb is being increased
+set_target_upper!(cp, n)
 set_peak!(cp, n)
 set_wait!(cp, n)
 set_n_tries!(cp, n)
 
 # Cleaning up
-free!(cp, c)                # Sets the connection c to unoccupied if target upper is not exceeded, otherwise removes it from the pool
+free!(cp, c)                # Sets the connection c to unoccupied if target_ub is not exceeded, otherwise removes it from the pool
 delete!(cp)                 # Disconnects and removes all connections in the pool and sets target_ub and peak to 0
 ```
 

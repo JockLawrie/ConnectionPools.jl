@@ -2,7 +2,8 @@
     Contents: Setters for ConnectionPool.
 
     Notes:
-    1. An error is raised if cp.target_lb <= cp.target_ub <= cp.peak is not satisfied.
+    1. When setting target_lb, if target_lb <= target_ub <= peak is not satisfied then target_ub and peak are adjusted accordingly.
+       Ditto when setting target_ub or peak.
 =#
 
 
@@ -18,8 +19,8 @@ Notes:
 """
 function set_target_lower!(cp::ConnectionPool, n:Int)
     cp.target_lb = n
-    check_constraints(cp)
-    n_new = max(0, n - get_n_connections(cp))    # Number of new connections to add to the pool
+    cp.target_lb > cp.target_ub && set_target_upper!(cp, n)    # Increase target_ub to new target_lb
+    n_new = max(0, n - get_n_connections(cp))                  # Number of new connections to add to the pool
     if n_new > 0
 	for i = 1:n_new
 	    c = new_connection(cp.connection_prototype)
@@ -30,7 +31,7 @@ end
 
 
 """
-Sets cp.target_ub and adjusts cp.unoccupied accordingly if necessary.
+Sets cp.target_ub and adjusts target_lb and peak if necessary to ensure target_lb <= target_ub <= peak.
 
 Notes:
 1. After setting cp.target_lb:
@@ -39,13 +40,14 @@ Notes:
 """
 function set_target_upper!(cp::ConnectionPool, n::Int)
     cp.target_ub = n
-    check_constraints(cp)
+    cp.target_lb > cp.target_ub && set_target_lower!(cp, n)    # Lower target_lb to new target_ub
+    cp.target_ub > cp.peak && set_peak!(cp, n)                 # Increase peak to new target_ub
 end
 
 
 function set_peak!(cp::ConnectionPool, n::Int)
     cp.peak = n
-    check_constraints(cp)
+    cp.target_ub > cp.peak && set_target_upper!(cp, n)         # Lower target_ub to new peak
 end
 
 
