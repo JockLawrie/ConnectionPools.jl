@@ -16,7 +16,7 @@ Notes:
        - If new_lb <= old_lb, do nothing because get_n_connections(cp) >= new_lb, which is valid.
        - If new_lb > old_lb and get_n_connections(cp) < new_lb, add new connections to the pool so that get_n_connections(cp) == new_lb.
 """
-function set_target_lower!(cp, n)
+function set_target_lower!(cp::ConnectionPool, n:Int)
     cp.target_lb = n
     check_constraints(cp)
     n_new = max(0, n - get_n_connections(cp))    # Number of new connections to add to the pool
@@ -37,21 +37,24 @@ Notes:
    - Ensure target_lb <= target_ub <= peak.
    - Ensure that get_n_connections(cp) <= peak. But this is already the case, so do nothing.
 """
-function set_target_upper!(cp, n)
+function set_target_upper!(cp::ConnectionPool, n::Int)
     cp.target_ub = n
     check_constraints(cp)
 end
 
 
-function set_peak!(cp, n)
+function set_peak!(cp::ConnectionPool, n::Int)
     cp.peak = n
+    check_constraints(cp)
 end
 
-function set_wait!(cp, n)
+
+function set_wait!(cp::ConnectionPool, n::Int)
     cp.ms_wait = n
 end
 
-function set_n_tries!(cp, n)
+
+function set_n_tries!(cp::ConnectionPool, n::Int)
     cp.n_tries = n
 end
 

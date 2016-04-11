@@ -18,7 +18,7 @@ Notes:
         - Try a maximum of `n_tries` times to acquire a connection from the pool.
         - If all attempts to acquire a connection fail, return cp.connection_prototype (which is disconnected)
 """
-function get_connection!(cp)
+function get_connection!(cp::ConnectionPool)
     result = cp.connection_prototype
     if get_n_connections(cp) < get_peak(cp)
 	if get_n_unoccupied(cp) == 0                          # If no connection available, create a new one
@@ -48,36 +48,36 @@ function get_connection!(cp)
 end
 
 
-function get_n_unoccupied(cp)
+function get_n_unoccupied(cp::ConnectionPool)
     length(cp.unoccupied)
 end
 
-function get_n_occupied(cp)
+function get_n_occupied(cp::ConnectionPool)
     length(cp.occupied)
 end
 
 "Number of connections, occupied or not."
-function get_n_connections(cp)
+function get_n_connections(cp::ConnectionPool)
     get_n_unoccupied(cp) + get_n_occupied(cp)
 end
 
-function get_target_lower(cp)
+function get_target_lower(cp::ConnectionPool)
     cp.target_lb
 end
 
-function get_target_upper(cp)
+function get_target_upper(cp::ConnectionPool)
     cp.target_ub
 end
 
-function get_peak(cp)
+function get_peak(cp::ConnectionPool)
     cp.peak
 end
 
-function get_wait(cp)
+function get_wait(cp::ConnectionPool)
     cp.ms_wait
 end
 
-function get_n_tries(cp)
+function get_n_tries(cp::ConnectionPool)
     cp.n_tries
 end
 

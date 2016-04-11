@@ -55,9 +55,12 @@ c4 = get_connection!(cp)
 c4 == 0                     # false because a 4th connection is now allowed
 get(c4, "foo") == "bar"     # true
 
+# Clean up
 free!(cp, c4)               # Deletes c4 from cp because 4 is more than the target upper bound
 free!(cp, c3)               # Moves c3 from occupied to unoccupied
-delete!(cp)                 # Delete all connections from the pool and set peak and target upper bound to 0
+free!(cp, c2)
+free!(cp, c1)
+delete!(cp)                 # Delete all connections from the pool and set target bounds and peak to 0. Requires get_n_occupied(cp) == 0.
 ```
 
 Note that `ConnectionPool(RedisConnection(), 0, 0, target_ub, 0, 0)` results in creating a new connection each time data must be fetched, then deleting the connection (after the data is fetched) by calling `free!`. Since failure to call `free!` will cause the number of connections to increase without bound, a finite number is required for `target_ub`.
@@ -100,8 +103,8 @@ set_wait!(cp, n)
 set_n_tries!(cp, n)
 
 # Cleaning up
-free!(cp, c)                # Sets the connection c to unoccupied if target upper is not exceeded, otherwise deletes it from the pool
-delete!(cp)                 # Disconnects and deletes all connections in the pool and sets target_ub and peak to 0
+free!(cp, c)                # Sets the connection c to unoccupied if target upper is not exceeded, otherwise removes it from the pool
+delete!(cp)                 # Disconnects and removes all connections in the pool and sets target_ub and peak to 0
 ```
 
 ### Todo
