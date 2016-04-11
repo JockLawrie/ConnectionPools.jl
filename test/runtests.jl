@@ -18,18 +18,18 @@ c2 = get_connection!(cp)
 c3 = get_connection!(cp)
 @test get(c1, "foo") == "bar"
 @test get(c2, "foo") == "bar"
-@test c3 == 0                   # Because a maximum of 2 connections is allowed
+@test !is_connected(c3)         # Because a maximum of 2 connections is allowed
 
 set_target_upper!(cp, 3)        # Also sets peak to 3 because the constraint target_ub <= peak is enforced
 c3 = get_connection!(cp)
-@test c3 != 0                   # Because a 3rd connection is now allowed
+@test is_connected(c3)          # Because a 3rd connection is now allowed
 @test get(c3, "foo") == "bar"
 
 c4 = get_connection!(cp)
-@test c4 == 0                   # Because a maximum of 3 connections is allowed
+@test !is_connected(c4)         # Because a maximum of 3 connections is allowed
 set_peak!(cp, 4)                # Increase peak from 3 to 4, leaving target upper bound at 3
 c4 = get_connection!(cp)
-@test c4 != 0                   # Because a 4th connection is now allowed
+@test is_connected(c4)          # Because a 4th connection is now allowed
 @test get(c4, "foo") == "bar"
 
 # set wait and n_tries
@@ -50,6 +50,12 @@ free!(cp, c1)
 @test get_n_connections(cp) == 3
 delete!(cp)                 # Delete all connections from the pool and set target bounds and peak to 0. Requires get_n_occupied(cp) == 0.
 @test get_n_connections(cp) == 0
+
+
+# Delete test data
+c = RedisConnection()
+del(c, "foo")
+disconnect(c)
 
 
 # EOF

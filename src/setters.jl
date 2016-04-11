@@ -17,7 +17,7 @@ Notes:
        - If new_lb <= old_lb, do nothing because get_n_connections(cp) >= new_lb, which is valid.
        - If new_lb > old_lb and get_n_connections(cp) < new_lb, add new connections to the pool so that get_n_connections(cp) == new_lb.
 """
-function set_target_lower!(cp::ConnectionPool, n:Int)
+function set_target_lower!(cp::ConnectionPool, n::Int)
     cp.target_lb = n
     cp.target_lb > cp.target_ub && set_target_upper!(cp, n)    # Increase target_ub to new target_lb
     n_new = max(0, n - get_n_connections(cp))                  # Number of new connections to add to the pool

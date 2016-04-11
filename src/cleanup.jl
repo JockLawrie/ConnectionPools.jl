@@ -34,7 +34,7 @@ function delete!(cp::ConnectionPool)
     end
     set_target_lower!(cp, 0)
     set_target_upper!(cp, 0)
-    set_target_peak!(cp, 0)
+    set_peak!(cp, 0)
 end
 
 
