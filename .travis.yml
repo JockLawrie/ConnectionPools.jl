@@ -2,13 +2,13 @@
 language: julia
 os:
   - linux
-  - osx
+#  - osx
 julia:
   - release
 services:
   - redis-server
-before_script:
-    - if ["$TRAVIS_OS_NAME" == "osx"]; then brew update; brew install redis; redis-server /usr/local/etc/redis.conf; fi
+#before_script:
+#    - if ["$TRAVIS_OS_NAME" == "osx"]; then brew update; brew install redis; redis-server /usr/local/etc/redis.conf; fi
 notifications:
   email: false
 script:
