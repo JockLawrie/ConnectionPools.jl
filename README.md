@@ -22,9 +22,10 @@ Loosely speaking, a connection pool is a set of connections to a given database.
 
 
 __Notes:__
+
 1. ConnectionPools.jl has only been tested with Redis so far.
-2. To add support for a new database, simply define a `new_connection(c)` method for your database type, see `src/new_connections` for details and examples.
-3. When setting target_lb, if target_lb <= target_ub <= peak is not satisfied then target_ub and peak are adjusted accordingly. Ditto when setting target_ub or peak.
+2. To add support for a new database, simply define methods for `new_connection(c)` and `disconnect(c)` for your database type. See `src/new_connections` for details and examples.
+3. When setting `target_lb`, if `target_lb <= target_ub <= peak` is not satisfied then `target_ub` and `peak` are adjusted accordingly. Ditto when setting `target_ub` or `peak`.
 
 
 ### Redis example
@@ -46,18 +47,20 @@ c2 = get_connection!(cp)
 c3 = get_connection!(cp)
 get(c1, "foo") == "bar"     # true
 get(c2, "foo") == "bar"     # true
-c3 == 0                     # true because a maximum of 2 connections is allowed
+println(is_connected(c3))   # false because a maximum of 2 connections is allowed
 
+# Increase target_ub
 set_target_upper!(cp, 3)    # Also sets peak to 3 because the constraint target_ub <= peak is enforced
 c3 = get_connection!(cp)
-c3 == 0                     # false because a 3rd connection is now allowed
+println(is_connected(c3))   # true because a 3rd connection is now allowed
 get(c3, "foo") == "bar"     # true
 
+# Increase peak
 c4 = get_connection!(cp)
-c4 == 0                     # true because a maximum of 3 connections is allowed
+println(is_connected(c4))   # false because a maximum of 3 connections is allowed
 set_peak!(cp, 4)            # Increase peak from 3 to 4, leaving target upper bound at 3
 c4 = get_connection!(cp)
-c4 == 0                     # false because a 4th connection is now allowed
+println(is_connected(c4))   # true because a 4th connection is now allowed
 get(c4, "foo") == "bar"     # true
 
 # Clean up
@@ -68,7 +71,7 @@ free!(cp, c1)
 delete!(cp)                 # Delete all connections from the pool and set target bounds and peak to 0. Requires get_n_occupied(cp) == 0.
 ```
 
-Note that `ConnectionPool(RedisConnection(), 0, 0, target_ub, 0, 0)` results in creating a new connection each time data must be fetched, then deleting the connection (after the data is fetched) by calling `free!`. Since failure to call `free!` will cause the number of connections to increase without bound, a finite number is required for `target_ub`.
+Note that `ConnectionPool(RedisConnection(), 0, 0, target_ub, 0, 0)` results in creating a new connection each time data must be fetched. Be sure to manually delete the connection (after the data is fetched) by calling `free!`. Since failure to call `free!` will cause the number of connections to increase without bound, a finite number is required for `peak` (the constraint `target_lb <= target_ub <= peak` is automatically enforced, which ensures that `target_lb` and `target_ub` are also finite).
 
 ### API
 The `ConnectionPool` type has the following structure and methods:

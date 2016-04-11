@@ -46,6 +46,7 @@ end
 
 
 function set_peak!(cp::ConnectionPool, n::Int)
+    assert(isfinite(n))
     cp.peak = n
     cp.target_ub > cp.peak && set_target_upper!(cp, n)         # Lower target_ub to new peak
 end

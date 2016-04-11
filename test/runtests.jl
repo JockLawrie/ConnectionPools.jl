@@ -40,15 +40,23 @@ set_n_tries!(cp, 5)
 
 # Clean up
 @test get_n_connections(cp) == 4
-free!(cp, c4)               # Deletes c4 from cp because 4 is more than the target upper bound
+free!(cp, c4)                       # Deletes c4 from cp because 4 is more than the target upper bound
 @test get_n_connections(cp) == 3
-free!(cp, c3)               # Moves c3 from occupied to unoccupied
+@test get_n_occupied(cp) == 3
+@test get_n_unoccupied(cp) == 0
+free!(cp, c3)                       # Moves c3 from occupied to unoccupied
 @test get_n_connections(cp) == 3
+@test get_n_occupied(cp) == 2
+@test get_n_unoccupied(cp) == 1
 free!(cp, c2)
 @test get_n_connections(cp) == 3
+@test get_n_occupied(cp) == 1
+@test get_n_unoccupied(cp) == 2
 free!(cp, c1)
 @test get_n_connections(cp) == 3
-delete!(cp)                 # Delete all connections from the pool and set target bounds and peak to 0. Requires get_n_occupied(cp) == 0.
+@test get_n_occupied(cp) == 0
+@test get_n_unoccupied(cp) == 3
+delete!(cp)                         # Delete all connections from the pool and set target bounds and peak to 0. Requires get_n_occupied(cp) == 0.
 @test get_n_connections(cp) == 0
 
 
