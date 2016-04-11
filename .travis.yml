@@ -6,7 +6,9 @@ os:
 julia:
   - release
 services:
-    - redis-server
+  - redis-server
+before_script:
+    - if ["$TRAVIS_OS_NAME" == "osx"]; then brew update; brew install --quiet redis; fi
 notifications:
   email: false
 script:
