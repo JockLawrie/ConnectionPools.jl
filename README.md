@@ -1,6 +1,7 @@
 # ConnectionPools
 
 [![Build Status](https://travis-ci.org/JockLawrie/ConnectionPools.jl.svg?branch=master)](https://travis-ci.org/JockLawrie/ConnectionPools.jl)
+[![Coverage Status](http://codecov.io/github/JockLawrie/ConnectionPools.jl/coverage.svg?branch=master)](http://codecov.io/github/JockLawrie/ConnectionPools.jl?branch=master)
 
 
 ### Introduction
