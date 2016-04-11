@@ -2,20 +2,30 @@ module ConnectionPools
 
 export ConnectionPool,
     # Getters
-    get_connection!,
-    get_n_connections,
-    get_n_unoccupied,
-    get_n_occupied,
-    get_target_lower,
-    get_target_upper,
-    get_peak,
-    get_wait,
-    get_n_tries
+       get_connection!,
+       get_n_connections,
+       get_n_unoccupied,
+       get_n_occupied,
+       get_target_lower,
+       get_target_upper,
+       get_peak,
+       get_wait,
+       get_n_tries,
+    # Setters
+       set_target_lower!,
+       set_target_upper!,
+       set_peak!,
+       set_wait!,
+       set_n_tries!,
+    # Cleaning up
+       free!,
+       delete!
 
 
 include("new_connections.jl")
 include("getters.jl")
 include("setters.jl")
+include("cleanup.jl")
 
 
 type ConnectionPool
@@ -54,6 +64,17 @@ function ConnectionPool(connection, target_lb::Int64, target_ub::Int64, peak::In
 	end
     end
     new(c0, target_lb, target_ub, peak, unoccupied, occupied, ms_wait, n_tries)
+end
+
+
+"Raises error if cp.target_lb <= cp.target_ub <= cp.peak is not satisfied."
+function check_constraints(cp::ConnectionPool)
+    check_connectionpool_constraints(cp.target_lb, cp.target_ub, peak)
+end
+
+function check_connectionpool_constraints(lb::Int64, ub::Int64, peak::Int64)
+    assert(lb <= ub)
+    assert(ub <= peak)
 end
 
 

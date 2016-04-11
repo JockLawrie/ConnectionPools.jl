@@ -1,5 +1,5 @@
 #=
-    Contents: Getters for ConnectionPool
+    Contents: Getters for ConnectionPool.
 =#
 
 
@@ -16,10 +16,10 @@ Notes:
         - If the peak number has not been reached, create a new connection and delete it when finished.
         - If the peak number has been reached, wait `ms_wait` ms and try again to acquire a connection.
         - Try a maximum of `n_tries` times to acquire a connection from the pool.
-        - Return 0 if all attempts to acquire a connection fail.
+        - If all attempts to acquire a connection fail, return cp.connection_prototype (which is disconnected)
 """
 function get_connection!(cp)
-    result = 0
+    result = cp.connection_prototype
     if get_n_connections(cp) < get_peak(cp)
 	if get_n_unoccupied(cp) == 0                          # If no connection available, create a new one
 	    result = new_connection(cp.connection_prototype)

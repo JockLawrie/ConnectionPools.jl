@@ -14,15 +14,15 @@ Loosely speaking, a connection pool is a set of connections to a given database.
 - When requesting a connection from the pool:
     - If the target upper bound has not been reached, get a connection from the `unoccupied` set if there is one, otherwise create a new one.
     - If the target upper bound has been reached:
-        - If the peak number has not been reached, create a new connection and delete it when finished.
-        - If the peak number has been reached, wait `ms_wait` ms and try again to acquire a connection.
+        - If the peak number has not been reached, create a new connection (and manually delete it when finished).
+        - If the peak number has been reached, wait `ms_wait` milliseconds and try again to acquire a connection.
         - Try a maximum of `n_tries` times to acquire a connection from the pool.
-        - Return 0 if all attempts to acquire a connection fail.
+        - If all attempts to acquire a connection fail, return the connection pool's connection prototype (a disconnected instance of the connection used to instantiate the connection pool).
 
-__Note:__ ConnectionPools.jl has only been tested with Redis so far.
+__Note:__ ConnectionPools.jl has only been tested with Redis so far. To add support for a new database, simply define a `new_connection(c)` method for your database type, see `src/new_connections` for details and examples.
 
 
-### Example
+### Redis example
 ```julia
 using ConnectionPools
 using Redis
@@ -81,7 +81,7 @@ end
 cp = ConnectionPool(connection, target_lb, target_ub, peak, ms_wait, n_tries)
 
 # Getters
-c = get_connection!(cp)     # Gets a connection from the pool if one is available, else returns 0
+c = get_connection!(cp)     # Gets a connection from the pool if one is available, else returns cp.connection_prototype
 get_n_connections(cp)       # Number of connections, occupied or not
 get_n_unoccupied(cp)
 get_n_occupied(cp)
@@ -92,11 +92,12 @@ get_wait(cp)
 get_n_tries(cp)
 
 # Setters
-set_target_lower!(cp)       # Adjusts cp.occupied and cp.unoccupied accordingly if necessary
-set_target_upper!(cp)       # Adjusts cp.occupied and cp.unoccupied accordingly if necessary
-set_peak!(cp)               # Adjusts cp.occupied and cp.unoccupied accordingly if necessary
-set_wait!(cp)
-set_n_tries!(cp)
+# An error is raised if cp.target_lb <= cp.target_ub <= cp.peak is not satisfied.
+set_target_lower!(cp, n)       # Adjusts cp.unoccupied accordingly if necessary
+set_target_upper!(cp, n)       # Adjusts cp.unoccupied accordingly if necessary
+set_peak!(cp, n)
+set_wait!(cp, n)
+set_n_tries!(cp, n)
 
 # Cleaning up
 free!(cp, c)                # Sets the connection c to unoccupied if target upper is not exceeded, otherwise deletes it from the pool
