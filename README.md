@@ -24,7 +24,7 @@ Loosely speaking, a connection pool is a set of connections to a given database.
 __Notes:__
 
 1. ConnectionPools.jl has only been tested with Redis so far.
-2. To add support for a new database, simply define methods for `new_connection(c)` and `disconnect(c)` for your database type. See `src/new_connections` for details and examples.
+2. To add support for a new database, simply define methods for `new_connection(c)` and `disconnect(c)` for your database type. See `src/supported_databases/` for details and examples.
 3. When setting `target_lb`, if `target_lb <= target_ub <= peak` is not satisfied then `target_ub` and `peak` are adjusted accordingly. Ditto when setting `target_ub` or `peak`.
 
 
