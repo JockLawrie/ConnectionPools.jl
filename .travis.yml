@@ -5,6 +5,8 @@ os:
   - osx
 julia:
   - release
+services:
+    - redis-server
 notifications:
   email: false
 script:
