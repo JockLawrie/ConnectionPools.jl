@@ -21,7 +21,9 @@ c3 = get_connection!(cp)
 @test !is_connected(c3)         # Because a maximum of 2 connections is allowed
 
 set_target!(cp, 3)              # Also sets peak to 3 because the constraint target_pool_size <= peak_size is enforced
-c3 = get_connection!(cp)
+c3 = get_connection!(cp)        # Create a 3rd connection and push it to cp.unoccupied
+release!(cp, c3)
+c3 = get_connection!(cp)        # Acquire a 3rd connection from cp.unoccupied
 @test is_connected(c3)          # Because a 3rd connection is now allowed
 @test get(c3, "foo") == "bar"
 
@@ -65,5 +67,9 @@ c = RedisConnection()
 del(c, "foo")
 disconnect(c)
 
+
+###################
+### Unsupported connection type
+@test_throws ErrorException ConnectionPool("bogus_connection", 2, 2, 500, 10)
 
 # EOF

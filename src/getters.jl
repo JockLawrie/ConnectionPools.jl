@@ -29,20 +29,15 @@ function get_connection!(cp::ConnectionPool)
 	    result = pop!(cp.unoccupied)
 	    push!(cp.occupied, result)
 	end
-    else
-	if get_n_unoccupied(cp) == 0                          # If no connection available, wait and try again
-	    s = 0.001 * get_n_tries(cp)
-	    for i = 1:cp.n_tries
-		sleep(s)
-		if get_n_unoccupied(cp) > 0
-		    result = pop!(cp.unoccupied)
-		    push!(cp.occupied, result)
-		    break
-		end
+    else    # get_n_connections(cp) == get_peak(cp)
+	s = 0.001 * get_n_tries(cp)
+	for i = 1:cp.n_tries
+	    sleep(s)
+	    if get_n_unoccupied(cp) > 0
+		result = pop!(cp.unoccupied)
+		push!(cp.occupied, result)
+		break
 	    end
-	else                                                  # If connection available, use it
-	    result = pop!(cp.unoccupied)
-	    push!(cp.occupied, result)
 	end
     end
     result
