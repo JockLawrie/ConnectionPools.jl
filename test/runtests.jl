@@ -42,10 +42,26 @@ set_n_tries!(cp, 5)
 @test get_n_tries(cp) == 5
 
 # Clean up
+set_target!(cp, 2)
 @test get_n_connections(cp) == 3
 @test get_n_occupied(cp) == 3
 @test get_n_unoccupied(cp) == 0
-release!(cp, c4)                       # Moves c4 from occupied to unoccupied
+release!(cp, c4)                       # Removes c4 from the pool because target_pool_size is 2
+@test get_n_connections(cp) == 2
+@test get_n_occupied(cp) == 2
+@test get_n_unoccupied(cp) == 0
+release!(cp, c2)                       # Moves c2 from occupied to unoccupied
+@test get_n_connections(cp) == 2
+@test get_n_occupied(cp) == 1
+@test get_n_unoccupied(cp) == 1
+release!(cp, c1)                       # Moves c1 from occupied to unoccupied
+@test get_n_connections(cp) == 2
+@test get_n_occupied(cp) == 0
+@test get_n_unoccupied(cp) == 2
+delete!(cp)                            # Disconnect all connections and remove the from the pool, and set target and peak to 0. Requires get_n_occupied(cp) == 0.
+@test get_n_connections(cp) == 0
+
+#=
 @test get_n_connections(cp) == 3
 @test get_n_occupied(cp) == 2
 @test get_n_unoccupied(cp) == 1
@@ -59,7 +75,7 @@ release!(cp, c1)
 @test get_n_unoccupied(cp) == 3
 delete!(cp)                            # Disconnect all connections and remove the from the pool, and set target and peak to 0. Requires get_n_occupied(cp) == 0.
 @test get_n_connections(cp) == 0
-
+=#
 
 # Delete test data
 c = RedisConnection()
