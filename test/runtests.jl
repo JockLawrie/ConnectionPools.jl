@@ -30,7 +30,8 @@ c3 = get_connection!(cp)        # Acquire a 3rd connection from cp.unoccupied
 c4 = get_connection!(cp)
 @test !is_connected(c4)         # Because a maximum of 3 connections is allowed
 set_peak!(cp, 4)                # Increase peak_size from 3 to 4, leaving target_pool_size at 3
-c4 = get_connection!(cp)
+release!(cp, c3)                # Make c3 available (push c3 to cp.unoccupied)
+c4 = get_connection!(cp)        # c4 = the old c3 (get c3 from cp.unoccupied)
 @test is_connected(c4)          # Because a 4th connection is now allowed
 @test get(c4, "foo") == "bar"
 
@@ -41,12 +42,10 @@ set_n_tries!(cp, 5)
 @test get_n_tries(cp) == 5
 
 # Clean up
-@test get_n_connections(cp) == 4
-release!(cp, c4)                       # Deletes c4 from cp because 4 is more than the target_pool_size
 @test get_n_connections(cp) == 3
 @test get_n_occupied(cp) == 3
 @test get_n_unoccupied(cp) == 0
-release!(cp, c3)                       # Moves c3 from occupied to unoccupied
+release!(cp, c4)                       # Moves c4 from occupied to unoccupied
 @test get_n_connections(cp) == 3
 @test get_n_occupied(cp) == 2
 @test get_n_unoccupied(cp) == 1
