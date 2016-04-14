@@ -67,13 +67,13 @@ get(c4, "foo") == "bar"     # true
 
 # Clean up
 release!(cp, c4)            # Deletes c4 from cp because 4 is more than target_pool_size
-release!(cp, c3)            # Moves c3 from occupied to unoccupied
+release!(cp, c3)            # Moves c3 from occupied to unoccupied because target_pool_size equals 3 (so 3 connections are retained in the pool)
 release!(cp, c2)
 release!(cp, c1)
 delete!(cp)                 # Delete all connections from the pool and set target_pool_size and peak_size to 0. Requires get_n_occupied(cp) == 0.
 ```
 
-Note that `ConnectionPool(RedisConnection(), 0, peak_size, 0, 0)` results in creating a new connection each time data must be fetched. Be sure to manually delete the connection (after the data is fetched) by calling `release!`. Since failure to call `release!` will cause the number of connections to increase without bound, a finite number is required for `peak` (the constraint `target_pool_size <= peak_size` is automatically enforced, which ensures that `target_lb` and `target_ub` are also finite).
+Note that `ConnectionPool(RedisConnection(), 0, peak_size, 0, 0)` results in creating a new connection each time data must be fetched. Be sure to manually delete the connection (after the data is fetched) by calling `release!`. Since failure to call `release!` will cause the number of connections to increase without bound, a finite number is required for `peak` (the constraint `target_pool_size <= peak_size` is automatically enforced, which ensures that `target_pool_size` is also finite).
 
 ### API
 The `ConnectionPool` type has the following structure and methods:
